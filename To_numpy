@@ -1,0 +1,24 @@
+import cv2
+import os
+from PIL import Image
+
+from numpy import asarray
+dirpath='/Users/kimjuhwan/Desktop/SI/'
+img_list = os.listdir(dirpath)
+img_to_numpy=[]
+print(img_list)
+
+for i in img_list:
+    if not i.endswith('.png'):
+        img_list.remove(i)
+print(img_list)
+
+for i in img_list:
+    img=Image.open(dirpath+i)
+    numpydata = asarray(img)
+    img_to_numpy.append(numpydata)
+
+print(img_to_numpy[0].shape)
+
+data=Image.fromarray(img_to_numpy[0])
+data.save('test1.png') #이미지 재구성 
