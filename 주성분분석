@@ -1,0 +1,31 @@
+import numpy as np
+import sklearn
+from sklearn.decomposition import PCA
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_validate
+
+puddle_np_2D = np.load('/Users/kimjuhwan/Desktop/npderivatives/pg2.npy') # 웅덩이 이미지로 부터 추출된 배열을 로드 
+# print(puddle_np_2D.shape)
+puddle_np_2D= puddle_np_2D.reshape(-1,256*256) # 주성분 분석을 위해 배열 재정리 
+print(puddle_np_2D.shape)
+nonpuddle_np_2D = np.load('/Users/kimjuhwan/Desktop/npderivatives/npg2.npy')
+# print(nonpuddle_np_2D.shape)
+nonpuddle_np_2D=nonpuddle_np_2D.reshape(-1,256*256)
+print(nonpuddle_np_2D.shape)
+
+
+training_data = np.concatenate((puddle_np_2D,nonpuddle_np_2D), axis=0) #웅덩이 배열과 비-웅덩이 배열을 하나의 데이터로 
+# print(training_data.shape)
+training_target = np.array([0] * 926 + [1] * 445) # 웅덩이 배열에는 0의 값을, 비-웅덩이 배열에는 1의 값을 매치 // 처음 926개의 배열은 웅덩이
+# 그 후에 concatenate 된 445개의 배열은 비-웅덩이에 대응 
+# print(training_target.shape)
+
+pca = PCA(n_components=6) #6개의 특성으로 주성분 분석 --> 6개인 이유는 6개로 테스트했을때 가장 교차검증 정확도가 높았음
+pca.fit(training_data) 
+trained_model = pca.transform(training_data) # training_data 배열로 주성분(PCA) 훈련 
+
+lr=LogisticRegression() # 훈련된 주성분을 분류 모델에 적용 
+
+scores = cross_validate(lr, trained_model, training_target) # 교차검증 
+print(np.mean(scores['test_score'])) # 교차검증후 나오는 평균 정확도 
+print(np.mean(scores['fit_time'])) 
