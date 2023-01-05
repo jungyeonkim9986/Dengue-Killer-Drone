@@ -1,0 +1,93 @@
+// constants that won't change
+const int motor1pin = 11;       // pin for motor 1
+const int motor2pin = 10;       // pin for motor 2
+const int motor3pin = 9;        // pin for motor 3
+const int motor4pin = 6;        // pin for motor 4
+const int speedChange = 255;     // try changing this value to change your drone's sensitivity to joystick 2 (steering)
+const int ramp_delay = 40;      // loop delay time for motor ramp up in milliseconds
+const float a = 0.3;            // constant for converting analog voltages to PWM values
+const float b = 1.5;            // offset for converting voltages to PWM values
+
+// variables that can change
+int joy1UD = 0;                    // analog reading from joystick 1 up/down motion
+int joy1LR = 0;                    // analog reading from joystick 1 left/right motion
+int joy2UD = 0;                    // analog reading from joystick 2 up/down motion
+int joy2LR = 0;                    // analog reading from joystick 2 left/right motion
+float joy2LRV = 0;                 // convert to voltage between 0-5V
+float joy2UDV = 0;                 // convert to voltage between 0-5V
+float defaultSpeed = 0;   // default PWM value
+int motor1speed = defaultSpeed;      // motor 1 PWM value between 0-255
+int motor2speed = defaultSpeed;      // motor 2 PWM value between 0-255
+int motor3speed = defaultSpeed;      // motor 3 PWM value between 0-255
+int motor4speed = defaultSpeed;      // motor 4 PWM value between 0-255
+
+
+void setup() { // code that only runs once
+  // 
+  Serial.begin(9600); // initialize serial communication, use for debugging if needed. Select Tools --> Serial Monitor to open window. 
+}
+
+void loop() {  // code that loops repeatedly
+  // read analog joystick voltages, returns an integer from 0-1023
+  joy2LR = analogRead(A0);     
+  joy2UD = analogRead(A1);     
+  joy1LR = analogRead(A2);     
+  joy1UD = analogRead(A3);     
+  joy2LRV = 5*float(joy2LR)/1023;          // convert to a voltage from 0-5V
+  joy2UDV = 5*float(joy2UD)/1023;          // convert to a voltage from 0-5V
+
+  // calculate default speed based on joystick 1 input
+  // note that because of the physical orientation of the joystick, the voltage gets SMALLER when you want the speed to get BIGGER
+  // that is why this equation has a negative slope
+  defaultSpeed = 255 - float(joy1LR)*255/490;  // try changing the value 490 here to change your drone's sensitivy to joystick 1
+  // make sure default speed is betwee 0-255
+  if(defaultSpeed<0){defaultSpeed=0;}
+  if(defaultSpeed>255){defaultSpeed=255;}
+
+  // calculate steering based on joystick 2 input
+  // joystick U/D should change 1&2 vs 3&4
+  // joystick L/R should change 1&4 vs 2&3
+  // change the value of 'speedChange' to change steering sensitivity
+  motor1speed = defaultSpeed+speedChange*(a*joy2LRV+a*joy2UDV-b);
+  motor2speed = defaultSpeed+speedChange*(-a*joy2LRV+a*joy2UDV);
+  motor3speed = defaultSpeed+speedChange*(-a*joy2LRV-a*joy2UDV+b);
+  motor4speed = defaultSpeed+speedChange*(a*joy2LRV-a*joy2UDV);
+
+  // make sure PWM signals do not exceed 0-255 range
+  if(motor1speed<0){motor1speed=0;}
+  if(motor2speed<0){motor2speed=0;}
+  if(motor3speed<0){motor3speed=0;}
+  if(motor4speed<0){motor4speed=0;}
+  if(motor1speed>255){motor1speed=255;}
+  if(motor2speed>255){motor2speed=255;}
+  if(motor3speed>255){motor3speed=255;}
+  if(motor4speed>255){motor4speed=255;}
+  
+  // send PWM signals to all 4 motors
+  analogWrite(motor1pin,motor1speed);
+  analogWrite(motor2pin,motor2speed);
+  analogWrite(motor3pin,motor3speed);
+  analogWrite(motor4pin,motor4speed); 
+  
+
+  // print some info for debugging purposes
+  // comment out if you don't need this
+  Serial.print(joy1LR);
+  Serial.print(" ");
+  Serial.print(joy1UD);
+  Serial.print(" ");
+  Serial.print(joy2LR);
+  Serial.print(" ");
+  Serial.print(joy2UD);
+  Serial.print(" ");
+  Serial.print(defaultSpeed);
+  Serial.print(" ");
+  Serial.print(motor1speed);
+  Serial.print(" ");
+  Serial.print(motor2speed);
+  Serial.print(" ");
+  Serial.print(motor3speed);
+  Serial.print(" ");
+  Serial.println(motor4speed);
+
+}
