@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
 from PIL import Image
-import image_transmission as it
-from it import im
+#import image_transmission as it
+#from it import im
 
-#img = cv2.imread(r"C:\Users\user\Documents\Desktop\bye\puddle.png", cv2.COLOR_BGR2GRAY)
+img = cv2.imread(r"C:\Users\user\Documents\Desktop\bye\puddle.png", cv2.COLOR_BGR2GRAY)
 #img = cv2.imdecode(imgnp,0)
 
-img = cv2.imdecode(im,0)
+#img = cv2.imdecode(im,0)
 ret,thresh = cv2.threshold(img,127,255,0)
 contours,hierarchy = cv2.findContours(thresh, 1, 2)
 
