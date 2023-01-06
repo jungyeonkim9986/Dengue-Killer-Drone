@@ -1,6 +1,7 @@
 import os
 from PIL import Image
 import numpy as np
+from image_processing import im
 
 from numpy import asarray
 dirpath='/Users/kimjuhwan/Desktop/Nonpuddle-gray2/'
